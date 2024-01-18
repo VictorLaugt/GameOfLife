@@ -536,9 +536,9 @@ if __name__ == '__main__' :
                         help="Nombre de colonnes de l'univers (80 par défaut)")
     parser.add_argument('-c', '--cell-size', type=int, default=10,
                         help=("Longueur du côté d'une cellule de l'univers "
-                              "(10 par défaut, à adapter selon le système d' "
+                              "(10 par défaut, à adapter selon le système d'"
                               "affichage)"))
     args = parser.parse_args()
-    
+
     window = MainWindow(args.height, args.width, args.cell_size, args.cell_size/3)
     window.mainloop()
