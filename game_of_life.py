@@ -13,11 +13,11 @@ import argparse
 # dbg = DebugSpace()
 
 
-class SpeedControl(Frame) :
+class SpeedControl(Frame):
     """Zone pour contrôler le temps d'attente entre le calcul de chaque étape
     de l'animation
     """
-    def __init__(self, master, univers, pad) :
+    def __init__(self, master, univers, pad):
         super().__init__(master)
         # attribut
         self.univers = univers
@@ -25,26 +25,26 @@ class SpeedControl(Frame) :
 
         # pack items
         pack_align(
-            [Label(self, text="Temps d'attente minumum (ms) :"),
+            [Label(self, text="Temps d'attente minumum (ms):"),
              self.entry,
              Button(self, text='Valider', command=self.set_speed)],
             side = LEFT,
             padx = pad
             )
 
-    def set_speed(self) :
+    def set_speed(self):
         """Change le temps d'attente entre chaque étape de la simulation"""
         new_time = int(self.entry.get())
-        if new_time > 0 :
+        if new_time > 0:
             self.univers.time = new_time
 
 
 
-class Editor(Frame) :
+class Editor(Frame):
     """Barre d'outils qui contient des boutons permettant de sélectionner un
     outil d'édition à utiliser pour modifier l'univers actuel
     """
-    def __init__(self, master, univers, pad) :
+    def __init__(self, master, univers, pad):
         super().__init__(master)
 
         # attributs
@@ -54,7 +54,7 @@ class Editor(Frame) :
 
         # pack items
         pack_align(
-            [Label(self, text='Editeur :'),
+            [Label(self, text='Editeur:'),
              Radiobutton(self, text='Inverser cellule', variable=self.selected,
                          value=0, command=self.select_tool, indicatoron=0),
              Radiobutton(self, text='Planeur', variable=self.selected,
@@ -67,41 +67,41 @@ class Editor(Frame) :
             side=LEFT, padx=pad, pady=pad/2)
 
 
-    def select_tool(self) :
+    def select_tool(self):
         """Sélectionne un outil d'édition"""
         self.edit_tool = self.tools[self.selected.get()]
 
 
-    def use(self, i, j) :
+    def use(self, i, j):
         """Utilise l'outil d'édition selectionné"""
         self.edit_tool(self, i, j)
 
 
-    def draw(self, i, j, config) :
+    def draw(self, i, j, config):
         """Construit la configuration de cellules config à la position (i, j)"""
         n, p = self.univers.n, self.univers.p
-        for k, l in config :
+        for k, l in config:
             self.univers.birth(((k+i)%n)*p + (l+j)%p)
 
 
     # --- editor tools
-    def switch_cell(self, i, j) :
+    def switch_cell(self, i, j):
         """Inverse l'état de la cellule à la position (i, j)"""
         t = i*(self.univers.p) + j
-        if self.univers.alive[t] :
+        if self.univers.alive[t]:
             self.univers.death(t)
-        else :
+        else:
             self.univers.birth(t)
 
-    def plane(self, i, j) :
+    def plane(self, i, j):
         """Construit un planeur à la position (i, j)"""
         self.draw(i, j, self.plane_config)
 
-    def canon(self, i, j) :
+    def canon(self, i, j):
         """Construit un canon à planeurs à la position (i, j)"""
         self.draw(i, j, self.canon_config)
 
-    def firework(self, i, j) :
+    def firework(self, i, j):
         """Contsruit un feu d'artifice à la position (i, j)"""
         self.draw(i, j, self.firework_config)
 
@@ -124,16 +124,16 @@ class Editor(Frame) :
 
 
 
-class SimulControl(Frame) :
-    """Barre d'outils qui contient les boutons :
-        Simuler/Pause :
+class SimulControl(Frame):
+    """Barre d'outils qui contient les boutons:
+        Simuler/Pause:
             Met en pause ou de reprend la simulation
-        Sauvegarder :
+        Sauvegarder:
             Sauvegarde l'état actuel de l'univers dans un fichier .txt
-        Charger :
+        Charger:
             Ecrase l'univers actuerl en restaurant la sauvegarde
     """
-    def __init__(self, master, univers, save_file_path, pad) :
+    def __init__(self, master, univers, save_file_path, pad):
         super().__init__(master)
 
         # attributs
@@ -155,7 +155,7 @@ class SimulControl(Frame) :
 
         # pack items
         pack_align(
-            [Label(self, text='Simulation :'),
+            [Label(self, text='Simulation:'),
              self.pause_button,
              Button(self, text='Sauvegarder', command=self.save),
              self.load_save_button],
@@ -165,63 +165,63 @@ class SimulControl(Frame) :
 
         # init attributes
         self.pause_button.deselect()
-        if not self.saved_data() :
+        if not self.saved_data():
             self.load_save_button.config(state='disabled')
 
 
-    def switch_play(self) :
+    def switch_play(self):
         """Démarre ou met en pause la simulation"""
         self.univers.play = not self.univers.play
-        if self.univers.play :
+        if self.univers.play:
             # reprise de la simulation
             self.pause_button.deselect()
             self.univers.init_display()
             self.univers.evolve()
-        else :
+        else:
             # mise en pause
             self.pause_button.select()
             self.univers.show_cell_edges()
 
 
     # --- gestion des sauvegardes
-    def save(self) :
+    def save(self):
         """Ecrase le fichier GameOfLifeSave.txt et écrit dedans l'état actuel
         de l'univers
         """
         n, p, size = self.univers.n, self.univers.p, self.univers.size
-        with self.save_file_path.open(mode='w') as file :
+        with self.save_file_path.open(mode='w') as file:
             file.write(f'{n} {p} '+' '.join(str(t) for t in range(size)
                                             if self.univers.alive[t]))
         self.load_save_button.config(state='normal')
 
 
-    def saved_data(self) :
+    def saved_data(self):
         """Renvoi l'univers contenu dans le fichier de sauvegarde s'il est de
         la même taille et forme que l'univers actuel de la simulation, sinon
         renvoi None
         """
-        if self.save_file_path.is_file() :
-            with self.save_file_path.open(mode='r') as file :
+        if self.save_file_path.is_file():
+            with self.save_file_path.open(mode='r') as file:
                 data = file.read().split()
-                if len(data) >= 3 :
+                if len(data) >= 3:
                     n, p, *saved_univers = data
-                    if (int(n), int(p)) == (self.univers.n, self.univers.p) :
+                    if (int(n), int(p)) == (self.univers.n, self.univers.p):
                         return saved_univers
 
 
-    def load(self) :
+    def load(self):
         """Charge la sauvegarde contenue dans le fichier GameOfLife.txt"""
         saved_univers = self.saved_data()
-        if saved_univers :
+        if saved_univers:
             self.univers.clear_all()
-            for t in saved_univers :
+            for t in saved_univers:
                 self.univers.birth(int(t))
 
 
 
-class BoundaryConditionsControl(Frame) :
+class BoundaryConditionsControl(Frame):
     """Zone pour choisir les conditions aux limites de l'univers"""
-    def __init__(self, master, univers, pad) :
+    def __init__(self, master, univers, pad):
         super().__init__(master)
         self.univers = univers
         self.boundary_type = IntVar(value=0)
@@ -229,7 +229,7 @@ class BoundaryConditionsControl(Frame) :
                                      self.univers.finite_univers_neighborhood]
 
         pack_align(
-            [Label(self, text='Conditions aux limites :'),
+            [Label(self, text='Conditions aux limites:'),
              Radiobutton(self,
                          variable=self.boundary_type,
                          value=0,
@@ -245,55 +245,55 @@ class BoundaryConditionsControl(Frame) :
             side=LEFT, padx=pad)
 
 
-    def switch_boundary_type(self) :
+    def switch_boundary_type(self):
         """Change les conditions aux limites de l'univers"""
         boundary_type = self.boundary_type.get()
         self.univers.init_neighborhoods(self.neighborhood_builder[boundary_type])
 
 
-class Univers(Canvas) :
+class Univers(Canvas):
     """Implémente l'univers de la simulation
 
     Attributs
     =================
-    n :
+    n:
         nombre de lignes dans l'univers
-    p :
+    p:
         nombres de colonnes dans l'univers
-    size :
+    size:
         nombres de cellules dans l'univers
     ----------
-    alive :
+    alive:
         alive[t] == True -> La cellule d'indice t est vivante
         alive[t] == False -> La cellule d'indice t est morte
-    neighborhood :
+    neighborhood:
         neighborhood[t] == indices des cellules voisines de la cellule
         d'indice t
-    alive_neighbors :
+    alive_neighbors:
         alive_neighbors[t] == nombre de voisins vivants de la cellule
         d'indice t
-    cells_repr :
+    cells_repr:
         liste qui contient les identifiants des carrés représentant chacune des
         cellules de l'univers
-    time :
+    time:
         nombre de millisecondes entre l'affichage de deux étapes successives de
         la simulation
-    play :
+    play:
         play == True -> Simulation en cours
         play == False -> Simulation en pause
     ----------
-    c :
+    c:
         longueur d'un côté d'une cellule
-    h :
+    h:
         hauteur de la représentation graphique de l'univers
-    w :
+    w:
         largeur de la représentation graphique de l'univers
-    ALIVE_COLOR :
+    ALIVE_COLOR:
         couleur des cellules vivantes
-    DEAD_COLOR :
+    DEAD_COLOR:
         couleur des cellules mortes
     """
-    def __init__(self, master, n, p, c) :
+    def __init__(self, master, n, p, c):
         # dimensionnement de l'univers
         self.n = n
         self.p = n
@@ -319,25 +319,25 @@ class Univers(Canvas) :
         self.bind('<Button-1>', self.click)
 
 
-    def init_neighborhoods(self, neighborhood_builder) :
+    def init_neighborhoods(self, neighborhood_builder):
         self.neighborhood = [neighborhood_builder(i, j) for i in range(self.n)
                                                         for j in range(self.p)]
 
-    def init_display(self) :
+    def init_display(self):
         """Efface entièrement la grille de cellules puis la reconstruit pour
         qu'elle représente l'état actuel de la simulation
         """
         n, p, c = self.n, self.p, self.c
         self.delete(ALL)
         y1, y2 = 0, c
-        for i in range(n) :
+        for i in range(n):
             x1, x2 = 0, c
-            for j in range(p) :
+            for j in range(p):
                 t = i*p + j
-                if self.alive[t] :
+                if self.alive[t]:
                     cell = self.create_rectangle(x1, y1, x2, y2,
                                                  fill=self.ALIVE_COLOR)
-                else :
+                else:
                     cell = self.create_rectangle(x1, y1, x2, y2,
                                                  fill=self.DEAD_COLOR)
                 self.cells_repr[t] = cell
@@ -345,13 +345,13 @@ class Univers(Canvas) :
             y1, y2 = y2, y2+c
 
 
-    def click(self, event) :
+    def click(self, event):
         c = self.c
         self.master.editor.use((event.y-(event.y%c)) // c,
                                (event.x-(event.x%c)) // c)
 
 
-    def periodic_univers_neighborhood(self, i:int, j:int) :
+    def periodic_univers_neighborhood(self, i:int, j:int):
         """Renvoie les indices des 8 cellules voisines de la cellule (i, j)
         dans l'univers si celui-ci est infini et periodique.
         """
@@ -365,7 +365,7 @@ class Univers(Canvas) :
                 (down*p + left), (down*p + j), (down*p + right))
 
 
-    def finite_univers_neighborhood(self, i:int, j:int) :
+    def finite_univers_neighborhood(self, i:int, j:int):
         """Renvoie les indices des 8 cellules voisines de la cellule (i, j)
         dans l'univers si celui-ci est fini.
         """
@@ -375,77 +375,77 @@ class Univers(Canvas) :
         left = j-1
         right = j+1
         result = []
-        if up >= 0 :
+        if up >= 0:
             result.append(up*p + j)
-            if left >= 0 :
+            if left >= 0:
                 result.append(up*p + left)
-            if right < n :
+            if right < n:
                 result.append(up*p + right)
-        if left >= 0 :
+        if left >= 0:
             result.append(i*p + left)
-        if right < n :
+        if right < n:
             result.append(i*p + right)
-        if down < n :
+        if down < n:
             result.append(down*p + j)
-            if left >= 0 :
+            if left >= 0:
                 result.append(down*p + left)
-            if right < n :
+            if right < n:
                 result.append(down*p + right)
         return result
 
 
-    def show_cell_edges(self) :
+    def show_cell_edges(self):
         """Dessine les bordures des cases de la grille de cellules"""
         # bordures horizontales
         y = 0
-        for i in range(self.n) :
+        for i in range(self.n):
             self.create_line(0, y, self.w, y, width=1, fill=self.ALIVE_COLOR)
             y += self.c
         # bordures verticales
         x = 0
-        for i in range(self.p) :
+        for i in range(self.p):
             self.create_line(x, 0, x, self.h, width=1, fill=self.ALIVE_COLOR)
             x += self.c
 
 
-    def clear_all(self) :
+    def clear_all(self):
         """Rend morte toute les cellules de l'univers"""
         n, p = self.n, self.p
-        for i in range(n) :
-            for j in range(p) :
+        for i in range(n):
+            for j in range(p):
                 t = i*p + j
                 self.alive[t] = False
                 self.alive_neighbors[t] = 0
                 self.itemconfig(self.cells_repr[t], fill=self.DEAD_COLOR)
 
 
-    def birth(self, t:int) :
+    def birth(self, t:int):
         """Rend (ou laisse) vivante la cellule d'indice t dans l'univers et affiche
         sa représentation graphique
         """
         alive, alive_neighbors = self.alive, self.alive_neighbors
-        if not alive[t] :
+        if not alive[t]:
             alive[t] = True
-            for u in self.neighborhood[t] :
+            for u in self.neighborhood[t]:
                 alive_neighbors[u] += 1
             self.itemconfig(self.cells_repr[t], fill=self.ALIVE_COLOR)
 
 
-    def death(self, t:int) :
+    def death(self, t:int):
         """Rend (ou laisse) morte la cellule d'indice t dans l'univers et efface sa
         représentation graphique
         """
         alive, alive_neighbors = self.alive, self.alive_neighbors
-        if alive[t] :
+        if alive[t]:
             alive[t] = False
-            for u in self.neighborhood[t] :
+            for u in self.neighborhood[t]:
                 alive_neighbors[u] -= 1
             self.itemconfig(self.cells_repr[t], fill=self.DEAD_COLOR)
 
 
-    def evolve(self) :
+    def evolve(self):
         """Fait évoluer (in place) l'univers de la simulation selon les règles du
-        jeu de la vie :
+        jeu de la vie:
         - Une cellule vivante meurt si elle possède 1, 4, 5, 6, 7, ou 8 voisins
         vivants.
         - Une cellule vivante survie si elle est entourée de 2 ou 3 cellules
@@ -453,7 +453,7 @@ class Univers(Canvas) :
         - Une cellule morte devient vivante si elle est entourée d'exactement
         3 cellules vivantes.
 
-        Implémentation :
+        Implémentation:
         2 voisins vivants => pas de changement d'état de la cellule
         3 voisins vivants => naissance de la cellule
         autre situation   => mort de la cellule
@@ -462,30 +462,30 @@ class Univers(Canvas) :
 
         # calcule les naissances et les morts pour passer à l'étape suivante
         birth_list, death_list = [], []
-        for t in range(self.size) :
+        for t in range(self.size):
             count = alive_neighbors[t]
-            if count == 3 :
+            if count == 3:
                 birth_list.append(t)
-            elif count == 2 :
+            elif count == 2:
                 pass
-            else :
+            else:
                 death_list.append(t)
 
         # passe à l'étape suivante en effectuant les naissances et morts calculées
-        for t in birth_list :
+        for t in birth_list:
             self.birth(t)
-        for t in death_list :
+        for t in death_list:
             self.death(t)
 
         # planifie la prochaine évolution
-        if self.play :
+        if self.play:
             window.after(self.time, self.evolve)
 
 
 
-class MainWindow(Tk) :
+class MainWindow(Tk):
     """Fenêtre principale de l'application"""
-    def __init__(self, n, p, c, pad) :
+    def __init__(self, n, p, c, pad):
         super().__init__()
 
         # zone où l'univers de la simulation s'affiche
@@ -522,13 +522,13 @@ class MainWindow(Tk) :
 
 
 
-def pack_align(items, *, side, **kwargs) :
-    for i, can in enumerate(items) :
+def pack_align(items, *, side, **kwargs):
+    for can in items:
         can.pack(side=side, **kwargs)
 
 
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('height', type=int, default=80, nargs='?',
                         help="Nombre de lignes de l'univers (80 par défaut)")
